@@ -20,6 +20,8 @@
  */
 package com.drew.imaging.mp4;
 
+import com.drew.lang.SequentialReader;
+import com.drew.lang.SequentialReaderFactory;
 import com.drew.lang.StreamReader;
 import com.drew.lang.annotations.NotNull;
 import com.drew.metadata.mp4.Mp4Context;
@@ -43,7 +45,12 @@ public class Mp4Reader
 
     public static void extract(@NotNull InputStream inputStream, @NotNull Mp4Handler<?> handler)
     {
-        StreamReader reader = new StreamReader(inputStream);
+        extract(inputStream, StreamReader::new, handler);
+    }
+
+    public static void extract(@NotNull InputStream inputStream, @NotNull SequentialReaderFactory readerFactory, @NotNull Mp4Handler<?> handler)
+    {
+        SequentialReader reader = readerFactory.create(inputStream);
         reader.setMotorolaByteOrder(true);
 
         Mp4Context context = new Mp4Context();
@@ -51,7 +58,7 @@ public class Mp4Reader
         processBoxes(reader, -1, 0, handler, context);
     }
 
-    private static void processBoxes(StreamReader reader, long atomEnd, int depth, Mp4Handler<?> handler, Mp4Context context)
+    private static void processBoxes(SequentialReader reader, long atomEnd, int depth, Mp4Handler<?> handler, Mp4Context context)
     {
         try {
             if (depth > MAX_BOX_DEPTH) {

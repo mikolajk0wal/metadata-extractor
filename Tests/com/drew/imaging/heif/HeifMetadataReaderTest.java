@@ -21,6 +21,8 @@
 package com.drew.imaging.heif;
 
 import com.drew.imaging.ImageMetadataReader;
+import com.drew.lang.SequentialReaderFactory;
+import com.drew.lang.StreamReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.heif.HeifDirectory;
@@ -30,6 +32,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -196,6 +199,32 @@ public class HeifMetadataReaderTest
 
         assertNotNull(directory);
         assertEquals(132, directory.getInt(IccDirectory.TAG_PROFILE_BYTE_COUNT));
+    }
+
+    @Test
+    public void testInjectedReaderFactoryIsReusedAfterStreamReset() throws Exception
+    {
+        // A box before 'meta' that is neither 'ftyp' nor 'meta' makes HeifReader rewind and re-read the stream
+        // with a second reader. The reset path must obtain that reader from the supplied factory rather than
+        // constructing a plain StreamReader, so the factory is asked for exactly two readers.
+        byte[] bytes = box("free", new byte[0]);
+
+        CountingSequentialReaderFactory factory = new CountingSequentialReaderFactory();
+        HeifMetadataReader.readMetadata(new ByteArrayInputStream(bytes), factory);
+
+        assertEquals(2, factory.createCount);
+    }
+
+    private static final class CountingSequentialReaderFactory implements SequentialReaderFactory
+    {
+        private int createCount;
+
+        @Override
+        public StreamReader create(InputStream inputStream)
+        {
+            createCount++;
+            return new StreamReader(inputStream);
+        }
     }
 
     /** Reads a file whose 'meta' box describes a single 'mime' item, stored in 'mdat', holding an XMP packet. */

@@ -22,6 +22,7 @@ package com.drew.metadata.mp3;
 
 import com.drew.imaging.ImageProcessingException;
 import com.drew.lang.SequentialReader;
+import com.drew.lang.SequentialReaderFactory;
 import com.drew.lang.StreamReader;
 import com.drew.lang.annotations.NotNull;
 import com.drew.metadata.Metadata;
@@ -39,11 +40,16 @@ public class Mp3Reader
 {
     public void extract(@NotNull final InputStream inputStream, @NotNull final Metadata metadata)
     {
+        extract(inputStream, StreamReader::new, metadata);
+    }
+
+    public void extract(@NotNull final InputStream inputStream, @NotNull final SequentialReaderFactory readerFactory, @NotNull final Metadata metadata)
+    {
         Mp3Directory directory = new Mp3Directory();
         metadata.addDirectory(directory);
 
         try {
-            SequentialReader reader = new StreamReader(inputStream);
+            SequentialReader reader = readerFactory.create(inputStream);
 
             int header = reader.getInt32();
 

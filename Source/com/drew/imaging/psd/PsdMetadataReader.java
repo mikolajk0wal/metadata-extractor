@@ -21,6 +21,7 @@
 
 package com.drew.imaging.psd;
 
+import com.drew.lang.SequentialReaderFactory;
 import com.drew.lang.StreamReader;
 import com.drew.lang.annotations.NotNull;
 import com.drew.metadata.Metadata;
@@ -53,8 +54,14 @@ public class PsdMetadataReader
     @NotNull
     public static Metadata readMetadata(@NotNull InputStream inputStream)
     {
+        return readMetadata(inputStream, StreamReader::new);
+    }
+
+    @NotNull
+    public static Metadata readMetadata(@NotNull InputStream inputStream, @NotNull SequentialReaderFactory readerFactory)
+    {
         Metadata metadata = new Metadata();
-        new PsdReader().extract(new StreamReader(inputStream), metadata);
+        new PsdReader().extract(readerFactory.create(inputStream), metadata);
         return metadata;
     }
 }

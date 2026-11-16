@@ -20,6 +20,8 @@
  */
 package com.drew.imaging.heif;
 
+import com.drew.lang.SequentialReaderFactory;
+import com.drew.lang.StreamReader;
 import com.drew.lang.annotations.NotNull;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.heif.HeifBoxHandler;
@@ -31,8 +33,14 @@ public class HeifMetadataReader
     @NotNull
     public static Metadata readMetadata(@NotNull InputStream inputStream)
     {
+        return readMetadata(inputStream, StreamReader::new);
+    }
+
+    @NotNull
+    public static Metadata readMetadata(@NotNull InputStream inputStream, @NotNull SequentialReaderFactory readerFactory)
+    {
         Metadata metadata = new Metadata();
-        new HeifReader().extract(inputStream, new HeifBoxHandler(metadata));
+        new HeifReader().extract(inputStream, readerFactory, new HeifBoxHandler(metadata));
         return metadata;
     }
 }

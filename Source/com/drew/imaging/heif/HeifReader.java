@@ -21,6 +21,7 @@
 package com.drew.imaging.heif;
 
 import com.drew.lang.SequentialReader;
+import com.drew.lang.SequentialReaderFactory;
 import com.drew.lang.StreamReader;
 import com.drew.metadata.heif.HeifBoxTypes;
 import com.drew.metadata.heif.HeifContainerTypes;
@@ -47,6 +48,11 @@ public class HeifReader
 
     public void extract(InputStream inputStream, HeifHandler<?> handler)
     {
+        extract(inputStream, StreamReader::new, handler);
+    }
+
+    public void extract(InputStream inputStream, SequentialReaderFactory readerFactory, HeifHandler<?> handler)
+    {
         // We need to read through the input stream to find the meta box which will tell us what handler to use
 
         // The meta box is not necessarily the first box, so we need to mark the input stream (if we can)
@@ -59,10 +65,10 @@ public class HeifReader
                 inputStream.mark(inputStream.available() + 1); // +1 since we're going to read past the end of the stream by 1 byte
             }
 
-            StreamReader reader = new StreamReader(inputStream);
+            SequentialReader reader = readerFactory.create(inputStream);
             reader.setMotorolaByteOrder(true);
 
-            processTopLevelBoxes(inputStream, reader, -1, handler, markSupported);
+            processTopLevelBoxes(inputStream, reader, -1, handler, markSupported, readerFactory);
         } catch (IOException e) {
             // Any errors should have been added to the directory
         }
@@ -72,7 +78,8 @@ public class HeifReader
                                       SequentialReader reader,
                                       long atomEnd,
                                       HeifHandler<?> handler,
-                                      boolean markSupported) throws IOException
+                                      boolean markSupported,
+                                      SequentialReaderFactory readerFactory) throws IOException
     {
         boolean foundMetaBox = false;
         boolean needToReset = false;
@@ -99,7 +106,7 @@ public class HeifReader
 
         if (needToReset && markSupported) {
             inputStream.reset();
-            reader = new StreamReader(inputStream);
+            reader = readerFactory.create(inputStream);
             processBoxes(reader, -1, 0, handler);
         } else if (needToReset) {
             HeifDirectory heifDirectory = handler.metadata.getFirstDirectoryOfType(HeifDirectory.class);

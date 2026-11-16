@@ -9,6 +9,7 @@
  */
 package com.drew.imaging.ebml;
 
+import com.drew.lang.SequentialReaderFactory;
 import com.drew.lang.StreamReader;
 import com.drew.lang.annotations.NotNull;
 import com.drew.metadata.Metadata;
@@ -31,8 +32,14 @@ public class EbmlMetadataReader
     @NotNull
     public static Metadata readMetadata(@NotNull InputStream inputStream) throws IOException
     {
+        return readMetadata(inputStream, StreamReader::new);
+    }
+
+    @NotNull
+    public static Metadata readMetadata(@NotNull InputStream inputStream, @NotNull SequentialReaderFactory readerFactory) throws IOException
+    {
         Metadata metadata = new Metadata();
-        new MkvReader().extract(new StreamReader(inputStream), metadata);
+        new MkvReader().extract(readerFactory.create(inputStream), metadata);
         return metadata;
     }
 }

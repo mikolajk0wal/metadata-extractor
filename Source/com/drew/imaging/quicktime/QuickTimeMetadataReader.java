@@ -21,6 +21,8 @@
 package com.drew.imaging.quicktime;
 
 import com.drew.imaging.ImageProcessingException;
+import com.drew.lang.SequentialReaderFactory;
+import com.drew.lang.StreamReader;
 import com.drew.lang.annotations.NotNull;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.file.FileSystemMetadataReader;
@@ -50,8 +52,14 @@ public class QuickTimeMetadataReader
     @NotNull
     public static Metadata readMetadata(@NotNull InputStream inputStream)
     {
+        return readMetadata(inputStream, StreamReader::new);
+    }
+
+    @NotNull
+    public static Metadata readMetadata(@NotNull InputStream inputStream, @NotNull SequentialReaderFactory readerFactory)
+    {
         Metadata metadata = new Metadata();
-        QuickTimeReader.extract(inputStream, new QuickTimeAtomHandler(metadata));
+        QuickTimeReader.extract(inputStream, readerFactory, new QuickTimeAtomHandler(metadata));
         return metadata;
     }
 }

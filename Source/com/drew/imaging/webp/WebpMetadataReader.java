@@ -22,6 +22,7 @@ package com.drew.imaging.webp;
 
 import com.drew.imaging.riff.RiffProcessingException;
 import com.drew.imaging.riff.RiffReader;
+import com.drew.lang.SequentialReaderFactory;
 import com.drew.lang.StreamReader;
 import com.drew.lang.annotations.NotNull;
 import com.drew.metadata.Metadata;
@@ -54,8 +55,14 @@ public class WebpMetadataReader
     @NotNull
     public static Metadata readMetadata(@NotNull InputStream inputStream) throws IOException, RiffProcessingException
     {
+        return readMetadata(inputStream, StreamReader::new);
+    }
+
+    @NotNull
+    public static Metadata readMetadata(@NotNull InputStream inputStream, @NotNull SequentialReaderFactory readerFactory) throws IOException, RiffProcessingException
+    {
         Metadata metadata = new Metadata();
-        new RiffReader().processRiff(new StreamReader(inputStream), new WebpRiffHandler(metadata));
+        new RiffReader().processRiff(readerFactory.create(inputStream), new WebpRiffHandler(metadata));
         return metadata;
     }
 }

@@ -20,6 +20,8 @@
  */
 package com.drew.imaging.quicktime;
 
+import com.drew.lang.SequentialReader;
+import com.drew.lang.SequentialReaderFactory;
 import com.drew.lang.StreamReader;
 import com.drew.lang.annotations.NotNull;
 import com.drew.metadata.mov.QuickTimeContext;
@@ -44,7 +46,12 @@ public class QuickTimeReader
 
     public static void extract(@NotNull InputStream inputStream, @NotNull QuickTimeHandler<?> handler)
     {
-        StreamReader reader = new StreamReader(inputStream);
+        extract(inputStream, StreamReader::new, handler);
+    }
+
+    public static void extract(@NotNull InputStream inputStream, @NotNull SequentialReaderFactory readerFactory, @NotNull QuickTimeHandler<?> handler)
+    {
+        SequentialReader reader = readerFactory.create(inputStream);
         reader.setMotorolaByteOrder(true);
 
         QuickTimeContext context = new QuickTimeContext();
@@ -52,7 +59,7 @@ public class QuickTimeReader
         processAtoms(reader, -1, 0, handler, context);
     }
 
-    private static void processAtoms(StreamReader reader, long atomEnd, int depth, QuickTimeHandler<?> handler, QuickTimeContext context)
+    private static void processAtoms(SequentialReader reader, long atomEnd, int depth, QuickTimeHandler<?> handler, QuickTimeContext context)
     {
         try {
             if (depth > MAX_ATOM_DEPTH) {

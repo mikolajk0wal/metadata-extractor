@@ -20,6 +20,8 @@
  */
 package com.drew.imaging.mp4;
 
+import com.drew.lang.SequentialReaderFactory;
+import com.drew.lang.StreamReader;
 import com.drew.lang.annotations.NotNull;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.file.FileSystemMetadataReader;
@@ -52,8 +54,14 @@ public class Mp4MetadataReader
     @NotNull
     public static Metadata readMetadata(@NotNull InputStream inputStream)
     {
+        return readMetadata(inputStream, StreamReader::new);
+    }
+
+    @NotNull
+    public static Metadata readMetadata(@NotNull InputStream inputStream, @NotNull SequentialReaderFactory readerFactory)
+    {
         Metadata metadata = new Metadata();
-        Mp4Reader.extract(inputStream, new Mp4BoxHandler(metadata));
+        Mp4Reader.extract(inputStream, readerFactory, new Mp4BoxHandler(metadata));
         return metadata;
     }
 }

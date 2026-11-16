@@ -20,6 +20,7 @@
  */
 package com.drew.imaging.ico;
 
+import com.drew.lang.SequentialReaderFactory;
 import com.drew.lang.StreamReader;
 import com.drew.lang.annotations.NotNull;
 import com.drew.metadata.Metadata;
@@ -52,8 +53,14 @@ public class IcoMetadataReader
     @NotNull
     public static Metadata readMetadata(@NotNull InputStream inputStream)
     {
+        return readMetadata(inputStream, StreamReader::new);
+    }
+
+    @NotNull
+    public static Metadata readMetadata(@NotNull InputStream inputStream, @NotNull SequentialReaderFactory readerFactory)
+    {
         Metadata metadata = new Metadata();
-        new IcoReader().extract(new StreamReader(inputStream), metadata);
+        new IcoReader().extract(readerFactory.create(inputStream), metadata);
         return metadata;
     }
 }

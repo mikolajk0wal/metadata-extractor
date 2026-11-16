@@ -20,6 +20,8 @@
  */
 package com.drew.imaging.mp3;
 
+import com.drew.lang.SequentialReaderFactory;
+import com.drew.lang.StreamReader;
 import com.drew.lang.annotations.NotNull;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.file.FileSystemMetadataReader;
@@ -54,8 +56,14 @@ public class Mp3MetadataReader
     @NotNull
     public static Metadata readMetadata(@NotNull InputStream inputStream)
     {
+        return readMetadata(inputStream, StreamReader::new);
+    }
+
+    @NotNull
+    public static Metadata readMetadata(@NotNull InputStream inputStream, @NotNull SequentialReaderFactory readerFactory)
+    {
         Metadata metadata = new Metadata();
-        new Mp3Reader().extract(inputStream, metadata);
+        new Mp3Reader().extract(inputStream, readerFactory, metadata);
         return metadata;
     }
 }
